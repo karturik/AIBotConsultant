@@ -2,7 +2,7 @@ from sqlalchemy import create_engine, select, and_
 from sqlalchemy.orm import Session
 from sqlalchemy import Integer
 from typing import List, Optional
-from ....services.database.nlp.models import Product, ProductOffer, ProductImage, ProductCharacteristic
+from services.database.nlp.models import Product, ProductOffer, ProductImage, ProductCharacteristic
 from db.relational.nlp.db_models import Base, DBProduct, DBProductCharacteristic, DBProductOffer
 
 

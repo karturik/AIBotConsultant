@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from typing import Optional
 from pydantic import BaseModel
 from ..utils.request_handler import RequestHandler
-from ..models.telegram_models import TelegramIncomingAPIRequest
+from ..models.incoming_request import IncomingRequest
 
 router = APIRouter()
 request_handler = RequestHandler()
@@ -12,9 +12,9 @@ class MessageResponse(BaseModel):
     status: str
 
 @router.post("/chat", response_model=MessageResponse)
-async def process_message(message: TelegramIncomingAPIRequest):
+async def process_message(message: IncomingRequest):
     """
-    Process incoming message from telegram bot
+    Process incoming message from bots and return a response.
     """
     try:
         response = await request_handler.process(message)

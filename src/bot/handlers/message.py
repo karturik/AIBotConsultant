@@ -2,6 +2,7 @@ from typing import Optional, Dict, Any
 import aiohttp
 import logging
 from datetime import datetime
+from uuid import uuid4
 import asyncio
 from .exceptions import (
     BackendConnectionError, 
@@ -10,7 +11,7 @@ from .exceptions import (
     InvalidMessageFormat
 )
 from ..bot_config import (
-    BACKEND_URL,
+    API_GATEWAY_URL,
     MAX_MESSAGE_SIZE,
     MAX_REQUESTS_PER_MINUTE,
     REQUEST_TIMEOUT,
@@ -51,10 +52,22 @@ class MessageProcessor:
         self._rate_limit_dict[user_id] = user_requests
         return True
 
+    async def handle_command(self, update: Any, context: Any):
+        if update.message.text == '/reset':
+            # Создаем новый диалог
+            new_conversation_id = str(uuid4())
+            context.user_data['conversation_id'] = new_conversation_id
+            await update.message.reply_text("Started new conversation!")
+            return
+    
     async def process_message(self, update: Any, context: Any) -> Optional[str]:
         """Main entry point for message processing"""
         try:
             user_id = update.effective_user.id
+
+            # Получаем или создаем conversation_id
+            if 'conversation_id' not in context.user_data:
+                context.user_data['conversation_id'] = str(uuid4())
             
             if not await self.check_rate_limit(user_id):
                 raise RateLimitExceeded("Too many requests. Please wait.")
@@ -63,10 +76,10 @@ class MessageProcessor:
                 return await self.process_text_message(update, context)
             elif update.message.voice:
                 return await self.process_voice_message(update, context)
-            elif update.message.photo:
-                return await self.process_photo_message(update, context)
-            elif update.message.document:
-                return await self.process_document_message(update, context)
+            # elif update.message.photo:
+            #     return await self.process_photo_message(update, context)
+            # elif update.message.document:
+            #     return await self.process_document_message(update, context)
             else:
                 raise InvalidMessageFormat("Unsupported message type")
                 
@@ -82,8 +95,9 @@ class MessageProcessor:
                 
             message_data = {
                 "type": "text",
+                "source": "telegram",
                 "content": update.message.text,
-                "metadata": self._get_metadata(update)
+                "metadata": self._get_metadata(update, context)
             }
             
             return await self._send_to_backend(message_data)
@@ -103,8 +117,9 @@ class MessageProcessor:
                 
             message_data = {
                 "type": "voice",
+                "source": "telegram",
                 "content": voice_bytes,
-                "metadata": self._get_metadata(update)
+                "metadata": self._get_metadata(update, context)
             }
             
             return await self._send_to_backend(message_data)
@@ -113,14 +128,15 @@ class MessageProcessor:
             logger.error(f"Error processing voice message: {str(e)}", exc_info=True)
             raise MessageProcessingError(str(e))
 
-    def _get_metadata(self, update: Any) -> Dict[str, Any]:
+    def _get_metadata(self, update: Any, context: Any) -> Dict[str, Any]:
         """Extract metadata from update"""
         return {
             "user_id": update.effective_user.id,
-            "chat_id": update.effective_chat.id,
+            # "chat_id": update.effective_chat.id,
             "timestamp": datetime.now().isoformat(),
-            "username": update.effective_user.username,
-            "message_id": update.message.message_id
+            # "username": update.effective_user.username,
+            # "message_id": update.message.message_id,
+            "conversation_id": context.user_data['conversation_id']
         }
 
     async def _send_to_backend(self, message_data: Dict[str, Any]) -> Optional[str]:
@@ -128,7 +144,7 @@ class MessageProcessor:
         for attempt in range(RETRY_ATTEMPTS):
             try:
                 async with self.session.post(
-                    BACKEND_URL,
+                    API_GATEWAY_URL,
                     json=message_data,
                     timeout=REQUEST_TIMEOUT
                 ) as response:
