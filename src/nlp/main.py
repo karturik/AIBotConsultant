@@ -1,21 +1,17 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from typing import Any
+from typing import Any, Optional, List
 
-class NLPRequest(BaseModel):
-    request_id: int
-    type: str
-    content: Any
-    user_id: str
-    chat_id: str
+from models.models import NLPChatRequest
+from utils.text_processor import llm_processing
 
 app = FastAPI()
 
-@app.post("/process")
-async def process_request(request: NLPRequest):
+@app.post("/chat")
+async def process_request(request: NLPChatRequest):
     try:
         # Обработка с помощью LangChain
-        result = await process_with_langchain(request)
+        result = await llm_processing(request)
         return {
             "status": "success",
             "response": result,

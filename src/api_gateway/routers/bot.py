@@ -12,12 +12,12 @@ class MessageResponse(BaseModel):
     status: str
 
 @router.post("/chat", response_model=MessageResponse)
-async def process_message(message: IncomingRequest):
+async def process_message(incoming_request: IncomingRequest):
     """
     Process incoming message from bots and return a response.
     """
     try:
-        response = await request_handler.process(message)
+        response = await request_handler.process(incoming_request)
         return MessageResponse(
             response=response,
             status="success"
