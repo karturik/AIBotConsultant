@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .routers import bot
 from .middleware.auth import AuthMiddleware
 from .middleware.logging import LoggingMiddleware
-from .config import Settings
+from .utils.config import Settings
 
 settings = Settings()
 
@@ -27,7 +27,7 @@ app.add_middleware(LoggingMiddleware)
 app.add_middleware(AuthMiddleware)
 
 # Routers
-app.include_router(bot.router, prefix="/api/v1/chat", tags=["bot", "consultant"])
+app.include_router(bot.router, prefix="/api/v1", tags=["bot", "consultant"])
 
 @app.get("/health")
 async def health_check():

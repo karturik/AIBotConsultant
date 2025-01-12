@@ -19,6 +19,7 @@ product_characteristics = Table(
     Column('characteristic_id', Integer, ForeignKey('characteristics.id'), primary_key=True)
 )
 
+
 class DBProduct(Base):
     __tablename__ = 'products'
     
@@ -26,14 +27,28 @@ class DBProduct(Base):
     name = Column(String(255), nullable=False, index=True)
     description = Column(String, nullable=False)
     reviews = Column(JSON)  # Stores product reviews as JSON
-    videos = Column(JSON)  # Stores video URLs as JSON array
     instructions = Column(String)
     availability = Column(JSON)  # Stores availability data as JSON
+    product_id = Column(Integer, ForeignKey('products.id'), nullable=False)
+    name = Column(String(255), nullable=False)
+    category = Column(String(100), nullable=False, index=True)
+    all_categories = Column(JSON)  # Stores category hierarchy as JSON array
+    price = Column(Float, nullable=False)
+    full_price = Column(Float, nullable=False)
+    brand = Column(String(100), nullable=False, index=True)
+    remind_status = Column(String(50))
+    url = Column(String, nullable=False)
     
     # Relationships
     images = relationship("DBProductImage", secondary=product_images, back_populates="products")
     characteristics = relationship("DBProductCharacteristic", secondary=product_characteristics, back_populates="products")
-    offers = relationship("DBProductOffer", back_populates="product", cascade="all, delete-orphan")
+
+    # Indexes for common queries
+    __table_args__ = (
+        {'mysql_engine': 'InnoDB'},
+        {'postgresql_using': 'btree'},
+        {'sqlite_on_conflict': 'ROLLBACK'},
+    )
 
 class DBProductImage(Base):
     __tablename__ = 'images'
@@ -56,30 +71,6 @@ class DBProductCharacteristic(Base):
     products = relationship("DBProduct", secondary=product_characteristics, back_populates="characteristics")
 
     # Composite index for faster characteristic lookups
-    __table_args__ = (
-        {'mysql_engine': 'InnoDB'},
-        {'postgresql_using': 'btree'},
-        {'sqlite_on_conflict': 'ROLLBACK'},
-    )
-
-class DBProductOffer(Base):
-    __tablename__ = 'offers'
-    
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    product_id = Column(Integer, ForeignKey('products.id'), nullable=False)
-    name = Column(String(255), nullable=False)
-    category = Column(String(100), nullable=False, index=True)
-    all_categories = Column(JSON)  # Stores category hierarchy as JSON array
-    price = Column(Float, nullable=False)
-    full_price = Column(Float, nullable=False)
-    brand = Column(String(100), nullable=False, index=True)
-    remind_status = Column(String(50))
-    url = Column(String, nullable=False)
-    
-    # Relationship
-    product = relationship("DBProduct", back_populates="offers")
-    
-    # Indexes for common queries
     __table_args__ = (
         {'mysql_engine': 'InnoDB'},
         {'postgresql_using': 'btree'},

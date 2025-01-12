@@ -2,8 +2,8 @@ from sqlalchemy import create_engine, select, and_
 from sqlalchemy.orm import Session
 from sqlalchemy import Integer
 from typing import List, Optional
-from .models import Product, ProductOffer, ProductImage, ProductCharacteristic
-from db.relational.models import Base, DBProduct, DBProductCharacteristic, DBProductOffer
+from ....services.database.nlp.models import Product, ProductOffer, ProductImage, ProductCharacteristic
+from db.relational.nlp.db_models import Base, DBProduct, DBProductCharacteristic, DBProductOffer
 
 
 class ProductDBManager:
@@ -49,8 +49,8 @@ class ProductDBManager:
     
     def filter_products_by_category(self, category: str) -> List[Product]:
         with Session(self.engine) as session:
-            query = select(DBProduct).join(DBProduct.offers).filter(
-                DBProductOffer.category == category
+            query = select(DBProduct).filter(
+                DBProduct.category == category
             ).distinct()
             
             db_products = session.execute(query).scalars().all()
@@ -58,8 +58,8 @@ class ProductDBManager:
 
     def filter_products_with_discount(self) -> List[Product]:
         with Session(self.engine) as session:
-            query = select(DBProduct).join(DBProduct.offers).filter(
-                DBProductOffer.price < DBProductOffer.full_price
+            query = select(DBProduct).filter(
+                DBProduct.price < DBProduct.full_price
             ).distinct()
             
             db_products = session.execute(query).scalars().all()
@@ -67,8 +67,8 @@ class ProductDBManager:
 
     def filter_products_by_brand(self, brand: str) -> List[Product]:
         with Session(self.engine) as session:
-            query = select(DBProduct).join(DBProduct.offers).filter(
-                DBProductOffer.brand == brand
+            query = select(DBProduct).filter(
+                DBProduct.brand == brand
             ).distinct()
             
             db_products = session.execute(query).scalars().all()
@@ -98,22 +98,13 @@ class ProductDBManager:
                 ProductCharacteristic(name=char.name, value=char.value)
                 for char in db_product.characteristics    
             ],
-            offers=[
-                ProductOffer(
-                    ID=offer.id,
-                    NAME=offer.name,
-                    CATEGORY=offer.category,
-                    CATEGORY_ALL=offer.all_categories,
-                    PRICE=offer.price,
-                    PRICE_FULL=offer.full_price,
-                    BRAND=offer.brand,
-                    STATUS_REMIND_ITEM=offer.remind_status,
-                    url=offer.url
-                )
-                for offer in db_product.offers
-            ],
+            category=db_product.category,
+            all_categories=db_product.all_categories,
+            price=db_product.price,
+            brand=db_product.brand,
+            url=db_product.url,
+            remind_status=db_product.remind_status,
             reviews=db_product.reviews,
-            videos=db_product.videos,
             instructions=db_product.instructions,
             availability=db_product.availability
         )
