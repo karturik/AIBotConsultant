@@ -20,7 +20,7 @@ from pydantic import BaseModel, HttpUrl, Field
 #     characteristics: List[ProductCharacteristic]
 #     reviews: List[Dict[str, Any]]  # [{"rating": 5, "comment": "Отличный телефон"}]
 #     instructions: Optional[HttpUrl] = None
-#     availability: Dict[str, Dict[str, Any]]  # {"store1": {"available": True}}
+#     availability: Dict[str, Dict[str, Any]]  # {"store1": {"available": True, ...}}
 #     configurations: List[str]  # Список конфигураций
 #     url: HttpUrl
 #     price: Optional[float]

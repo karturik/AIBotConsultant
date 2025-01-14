@@ -3,9 +3,6 @@ from sqlalchemy.orm import Session
 from sqlalchemy import Integer
 from typing import List, Optional, Any
 
-# from src.api_gateway.models.telegram_models import *
-# from src.api_gateway.models.conversation import ConversationMessage
-
 from db.relational.api_gateway.db_models import Base, DBConversationLog
 from core.config import SQLALCHEMY_DATABASE_URL
 

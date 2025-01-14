@@ -4,7 +4,7 @@ from sqlalchemy.engine import Engine
 from typing import Generator
 from contextlib import contextmanager
 
-from src.core import SQLALCHEMY_DATABASE_URL, POOL_SIZE, MAX_OVERFLOW
+from src.core.config import SQLALCHEMY_DATABASE_URL, POOL_SIZE, MAX_OVERFLOW
 
 
 class DatabaseSession:

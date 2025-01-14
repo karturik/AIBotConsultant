@@ -13,6 +13,8 @@ DB_NAME = os.getenv("DB_NAME", "")
 
 # SQLAlchemy configuration
 SQLALCHEMY_DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+# SQLALCHEMY_DATABASE_URL = "sqlite:///./products.db"
+
 POOL_SIZE = 5
 MAX_OVERFLOW = 10
 

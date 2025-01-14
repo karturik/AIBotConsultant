@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, JSON, Table
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, JSON, Table, Index
 from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -27,27 +27,24 @@ class DBProduct(Base):
     name = Column(String(255), nullable=False, index=True)
     description = Column(String, nullable=False)
     reviews = Column(JSON)  # Stores product reviews as JSON
-    instructions = Column(String)
-    availability = Column(JSON)  # Stores availability data as JSON
+    shops_availability = Column(JSON)  # Stores availability data as JSON
     product_id = Column(Integer, ForeignKey('products.id'), nullable=False)
-    name = Column(String(255), nullable=False)
     category = Column(String(100), nullable=False, index=True)
-    all_categories = Column(JSON)  # Stores category hierarchy as JSON array
     price = Column(Float, nullable=False)
     full_price = Column(Float, nullable=False)
     brand = Column(String(100), nullable=False, index=True)
     remind_status = Column(String(50))
     url = Column(String, nullable=False)
+    additional_info = Column(String, nullable=True)  
     
     # Relationships
     images = relationship("DBProductImage", secondary=product_images, back_populates="products")
     characteristics = relationship("DBProductCharacteristic", secondary=product_characteristics, back_populates="products")
 
-    # Indexes for common queries
+    # Create indexes
     __table_args__ = (
-        {'mysql_engine': 'InnoDB'},
-        {'postgresql_using': 'btree'},
-        {'sqlite_on_conflict': 'ROLLBACK'},
+        Index('ix_products_name_category', 'name', 'category'),
+        Index('ix_products_brand_price', 'brand', 'price'),
     )
 
 class DBProductImage(Base):
@@ -70,11 +67,9 @@ class DBProductCharacteristic(Base):
     # Relationship
     products = relationship("DBProduct", secondary=product_characteristics, back_populates="characteristics")
 
-    # Composite index for faster characteristic lookups
+    # Create index for characteristics
     __table_args__ = (
-        {'mysql_engine': 'InnoDB'},
-        {'postgresql_using': 'btree'},
-        {'sqlite_on_conflict': 'ROLLBACK'},
+        Index('ix_characteristics_name_value', 'name', 'value'),
     )
 
 def init_db(engine):
