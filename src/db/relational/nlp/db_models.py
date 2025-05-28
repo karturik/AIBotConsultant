@@ -28,7 +28,7 @@ class DBProduct(Base):
     description = Column(String, nullable=False)
     reviews = Column(JSON)  # Stores product reviews as JSON
     shops_availability = Column(JSON)  # Stores availability data as JSON
-    product_id = Column(Integer, ForeignKey('products.id'), nullable=False)
+    product_id = Column(Integer, nullable=True)
     category = Column(String(100), nullable=False, index=True)
     price = Column(Float, nullable=False)
     full_price = Column(Float, nullable=False)
